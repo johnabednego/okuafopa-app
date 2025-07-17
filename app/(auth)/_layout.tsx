@@ -33,8 +33,8 @@ export default function AuthLayout() {
       <Stack.Screen name="signup" options={{ title: 'Okuafopa' }} />
       <Stack.Screen name="login" options={{ title: 'Okuafopa' }} />
       <Stack.Screen name="forgot-password" options={{ title: 'Okuafopa' }} />
-      <Stack.Screen name="verify-email/[email]" options={{ title: 'Verify Email' }} />
-      <Stack.Screen name="reset-password/[email]" options={{ title: 'Reset Password' }} />
+      <Stack.Screen name="verify-email/[email]" options={{ title: 'Okuafopa' }} />
+      <Stack.Screen name="reset-password/[email]" options={{ title: 'Okuafopa' }} />
     </Stack>
   )
 }
