@@ -11,4 +11,5 @@ export default {
   gray: '#888888',
   danger: '#ff4d4d',
   success: '#28a745',
+  grayLight: '#f0f0f0',
 };

@@ -9,7 +9,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  Alert
+  Alert,
+  Animated,
+  Easing
 } from 'react-native'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
@@ -23,13 +25,13 @@ import { showError } from '../../src/utils/alert'
 import COLORS from '../../src/theme/colors'
 
 const SignupSchema = Yup.object().shape({
-  firstName:    Yup.string().required('First name is required'),
-  lastName:     Yup.string().required('Last name is required'),
-  email:        Yup.string().email('Invalid email').required('Email is required'),
-  password:     Yup.string().min(6, 'At least 6 characters').required('Password is required'),
-  phoneNumber:  Yup.string().required('Phone number is required'),
-  country:      Yup.string().required('Country is required'),
-  city:         Yup.string().required('City is required'),
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  password: Yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  phoneNumber: Yup.string().required('Phone number is required'),
+  country: Yup.string().required('Country is required'),
+  city: Yup.string().required('City is required'),
 })
 
 export default function SignupScreen() {
@@ -37,6 +39,20 @@ export default function SignupScreen() {
   const router = useRouter()
   const [role, setRole] = useState<'farmer' | 'buyer'>('farmer')
   const insets = useSafeAreaInsets()
+  const [toggleAnim] = useState(new Animated.Value(0)) // 0 = farmer, 1 = buyer
+
+  const toggleRole = (newRole: 'farmer' | 'buyer') => {
+    if (newRole !== role) {
+      setRole(newRole)
+      Animated.timing(toggleAnim, {
+        toValue: newRole === 'farmer' ? 0 : 1,
+        duration: 250,
+        easing: Easing.out(Easing.circle),
+        useNativeDriver: false,
+      }).start()
+    }
+  }
+
 
   return (
     <SafeAreaView
@@ -49,21 +65,55 @@ export default function SignupScreen() {
       >
         {/* Logo */}
         <Logo variant="dark" imageStyle={styles.logo} />
+        <Text style={styles.title}>Register</Text>
+
 
         {/* Role Tabs */}
-        <View style={styles.tabRow}>
-          {(['farmer', 'buyer'] as const).map(r => (
-            <TouchableOpacity
-              key={r}
-              style={[ styles.tab, role === r && styles.tabActive ]}
-              onPress={() => setRole(r)}
+        <View style={styles.toggleWrapper}>
+          <Animated.View
+            style={[
+              styles.toggleSlider,
+              {
+                left: toggleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '50%'],
+                }),
+              },
+            ]}
+          />
+
+          <TouchableOpacity
+            style={styles.toggleHalf}
+            onPress={() => toggleRole('farmer')}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[
+                styles.toggleLabel,
+                role === 'farmer' && styles.toggleLabelActive,
+              ]}
             >
-              <Text style={[ styles.tabText, role === r && styles.tabTextActive ]}>
-                {r.charAt(0).toUpperCase() + r.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+              Farmer
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toggleHalf}
+            onPress={() => toggleRole('buyer')}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[
+                styles.toggleLabel,
+                role === 'buyer' && styles.toggleLabelActive,
+              ]}
+            >
+              Buyer
+            </Text>
+          </TouchableOpacity>
         </View>
+
+
 
         {/* Form */}
         <Formik
@@ -212,6 +262,13 @@ const styles = StyleSheet.create({
   logo: {
     marginBottom: 24,
   },
+  title: {
+    fontSize: 28,
+    color: COLORS.primary,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
   tabRow: {
     flexDirection: 'row',
     marginBottom: 24,
@@ -224,17 +281,53 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: COLORS.gray,
   },
-  tabActive: {
-    backgroundColor: COLORS.primary,
+
+  //
+  toggleWrapper: {
+    flexDirection: 'row',
+    position: 'relative',
+    height: 48,
+    borderRadius: 30,
+    backgroundColor: COLORS.grayLight || '#eee',
+    overflow: 'hidden',
+    marginBottom: 24,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  tabText: {
-    textAlign: 'center',
-    color: COLORS.text,
+
+  toggleSlider: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: '50%',
+    backgroundColor: COLORS.primary || 'green',
+    borderRadius: 30,
+    zIndex: 0,
+  },
+
+  toggleHalf: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+
+  toggleLabel: {
+    color: COLORS.text || '#444',
+    fontSize: 16,
     fontWeight: '600',
   },
-  tabTextActive: {
+
+  toggleLabelActive: {
     color: COLORS.white,
   },
+
+
+  //
+
   form: {
     alignSelf: 'stretch',
     backgroundColor: COLORS.white,
