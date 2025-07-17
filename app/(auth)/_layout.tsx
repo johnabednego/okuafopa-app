@@ -17,9 +17,7 @@ export default function AuthLayout() {
     }
   }, [token, user])
 
-  if (!checked) {
-    return null
-  }
+  if (!checked) return null
 
   return (
     <Stack
@@ -28,13 +26,13 @@ export default function AuthLayout() {
         headerStyle: { backgroundColor: COLORS.primary },
         headerTintColor: COLORS.onPrimary,
         headerTitleAlign: 'center',
-        // ensure the background behind the header and status bar is green
-        contentStyle: { backgroundColor: COLORS.primary }
+        contentStyle: { backgroundColor: COLORS.primary },
+        keyboardHandlingEnabled: false
       }}
     >
-      <Stack.Screen name="signup" options={{ title: 'Register' }} />
-      <Stack.Screen name="login" options={{ title: 'Log In' }} />
-      <Stack.Screen name="forgot-password" options={{ title: 'Forgot Password' }} />
+      <Stack.Screen name="signup" options={{ title: 'Okuafopa' }} />
+      <Stack.Screen name="login" options={{ title: 'Okuafopa' }} />
+      <Stack.Screen name="forgot-password" options={{ title: 'Okuafopa' }} />
       <Stack.Screen name="verify-email/[email]" options={{ title: 'Verify Email' }} />
       <Stack.Screen name="reset-password/[email]" options={{ title: 'Reset Password' }} />
     </Stack>
