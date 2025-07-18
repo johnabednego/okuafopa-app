@@ -12,4 +12,5 @@ export default {
   danger: '#ff4d4d',
   success: '#28a745',
   grayLight: '#f0f0f0',
+   textLight: "#9A8478",
 };

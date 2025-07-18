@@ -1,6 +1,4 @@
-// app/signup.tsx
-
-import React, { useContext, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -8,15 +6,15 @@ import {
   Button,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
   Alert,
   Animated,
-  Easing
+  Easing,
 } from 'react-native'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 import FormInput from '../../src/components/FormInput'
 import Logo from '../../src/components/Logo'
@@ -40,6 +38,8 @@ export default function SignupScreen() {
   const [role, setRole] = useState<'farmer' | 'buyer'>('farmer')
   const insets = useSafeAreaInsets()
   const [toggleAnim] = useState(new Animated.Value(0)) // 0 = farmer, 1 = buyer
+  const scrollRef = useRef<KeyboardAwareScrollView>(null)
+
 
   const toggleRole = (newRole: 'farmer' | 'buyer') => {
     if (newRole !== role) {
@@ -53,22 +53,23 @@ export default function SignupScreen() {
     }
   }
 
-
   return (
     <SafeAreaView
       edges={['bottom']}
       style={[styles.safeArea, { paddingBottom: insets.bottom }]}
     >
-      <ScrollView
+      <KeyboardAwareScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        extraScrollHeight={20}
+        enableAutomaticScroll
       >
-        {/* Logo */}
         <Logo variant="dark" imageStyle={styles.logo} />
         <Text style={styles.title}>Register</Text>
 
-
-        {/* Role Tabs */}
+        {/* Role Toggle Tabs */}
         <View style={styles.toggleWrapper}>
           <Animated.View
             style={[
@@ -81,41 +82,26 @@ export default function SignupScreen() {
               },
             ]}
           />
-
           <TouchableOpacity
             style={styles.toggleHalf}
             onPress={() => toggleRole('farmer')}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.toggleLabel,
-                role === 'farmer' && styles.toggleLabelActive,
-              ]}
-            >
+            <Text style={[styles.toggleLabel, role === 'farmer' && styles.toggleLabelActive]}>
               Farmer
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.toggleHalf}
             onPress={() => toggleRole('buyer')}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.toggleLabel,
-                role === 'buyer' && styles.toggleLabelActive,
-              ]}
-            >
+            <Text style={[styles.toggleLabel, role === 'buyer' && styles.toggleLabelActive]}>
               Buyer
             </Text>
           </TouchableOpacity>
         </View>
 
-
-
-        {/* Form */}
         <Formik
           initialValues={{
             firstName: '',
@@ -124,7 +110,8 @@ export default function SignupScreen() {
             password: '',
             phoneNumber: '',
             country: '',
-            city: ''
+            city: '',
+            role:role,
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values, { setSubmitting }) => {
@@ -158,18 +145,22 @@ export default function SignupScreen() {
                 onBlur={handleBlur('firstName')}
                 value={values.firstName}
                 error={errors.firstName}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.firstName}
               />
-
               <FormInput
                 label="Last Name"
                 onChangeText={handleChange('lastName')}
                 onBlur={handleBlur('lastName')}
                 value={values.lastName}
                 error={errors.lastName}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.lastName}
               />
-
               <FormInput
                 label="Email"
                 keyboardType="email-address"
@@ -178,9 +169,11 @@ export default function SignupScreen() {
                 onBlur={handleBlur('email')}
                 value={values.email}
                 error={errors.email}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.email}
               />
-
               <FormInput
                 label="Password"
                 secureTextEntry
@@ -188,9 +181,11 @@ export default function SignupScreen() {
                 onBlur={handleBlur('password')}
                 value={values.password}
                 error={errors.password}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.password}
               />
-
               <FormInput
                 label="Phone Number"
                 keyboardType="phone-pad"
@@ -198,24 +193,31 @@ export default function SignupScreen() {
                 onBlur={handleBlur('phoneNumber')}
                 value={values.phoneNumber}
                 error={errors.phoneNumber}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.phoneNumber}
               />
-
               <FormInput
                 label="Country"
                 onChangeText={handleChange('country')}
                 onBlur={handleBlur('country')}
                 value={values.country}
                 error={errors.country}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.country}
               />
-
               <FormInput
                 label="City"
                 onChangeText={handleChange('city')}
                 onBlur={handleBlur('city')}
                 value={values.city}
                 error={errors.city}
+                onFocus={(e) => {
+                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                }}
                 touched={touched.city}
               />
 
@@ -235,7 +237,6 @@ export default function SignupScreen() {
                 </View>
               )}
 
-              {/* Already have account? Log In */}
               <View style={styles.loginRow}>
                 <Text style={styles.loginText}>Already have an account? </Text>
                 <TouchableOpacity onPress={() => router.replace('/login')}>
@@ -245,7 +246,7 @@ export default function SignupScreen() {
             </View>
           )}
         </Formik>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   )
 }
@@ -256,7 +257,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 32,
     alignItems: 'center',
   },
   logo: {
@@ -269,26 +272,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     textAlign: 'center',
   },
-  tabRow: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    borderRadius: 8,
-    overflow: 'hidden',
-    alignSelf: 'stretch',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: COLORS.gray,
-  },
-
-  //
   toggleWrapper: {
     flexDirection: 'row',
     position: 'relative',
     height: 48,
     borderRadius: 30,
-    backgroundColor: COLORS.grayLight || '#eee',
+    backgroundColor: COLORS.grayLight,
     overflow: 'hidden',
     marginBottom: 24,
     elevation: 3,
@@ -297,37 +286,29 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
   },
-
   toggleSlider: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     width: '50%',
-    backgroundColor: COLORS.primary || 'green',
+    backgroundColor: COLORS.primary,
     borderRadius: 30,
     zIndex: 0,
   },
-
   toggleHalf: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },
-
   toggleLabel: {
-    color: COLORS.text || '#444',
+    color: COLORS.text,
     fontSize: 16,
     fontWeight: '600',
   },
-
   toggleLabelActive: {
     color: COLORS.white,
   },
-
-
-  //
-
   form: {
     alignSelf: 'stretch',
     backgroundColor: COLORS.white,

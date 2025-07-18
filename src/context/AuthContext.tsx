@@ -3,25 +3,25 @@ import api from '../api/client'
 import { clearToken, getToken, setToken as storeToken } from '../utils/asyncStorageHelpers'
 
 type AuthContextType = {
-  user: any|null
-  token: string|null
+  user: any | null
+  token: string | null
   signup: (data: any) => Promise<void>
   verifyEmail: (email: string, otp: string) => Promise<void>
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   forgotPassword: (email: string) => Promise<void>
-  resetPassword: (email:string, otp:string, newPass:string) => Promise<void>
-  resendOtp: (email:string, purpose:string) => Promise<void>
+  resetPassword: (email: string, otp: string, newPass: string) => Promise<void>
+  resendOtp: (email: string, purpose: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType>({} as any)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string|null>(null)
+  const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    ;(async () => {
+    ; (async () => {
       const t = await getToken()
       if (t) {
         setToken(t)
@@ -31,27 +31,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })()
   }, [])
 
-  const signup = async (data:any) => {
-    await api.post('/signup', data)
+  const signup = async (data: any) => {
+    await api.post('/auth/signup', data)
     // after signup, backend responds with email only
   }
 
-  const verifyEmail = async (email:string, otp:string) => {
-    const res = await api.post('/verify-email', { email, otp })
+  const verifyEmail = async (email: string, otp: string) => {
+    const res = await api.post('/auth/verify-email', { email, otp })
     const { token: t, user: u } = res.data
     await storeToken(t)
     setToken(t)
     setUser(u)
   }
 
-  const login = async (email:string, password:string) => {
+  const login = async (email: string, password: string) => {
     try {
-      const res = await api.post('/login', { email, password })
+      const res = await api.post('/auth/login', { email, password })
       const { token: t, user: u } = res.data
       await storeToken(t)
       setToken(t)
       setUser(u)
-    } catch (err:any) {
+    } catch (err: any) {
       if (err.response?.status === 403 && err.response.data.message === 'Email not verified') {
         // throw a special flag so UI can redirect to VerifyEmail
         throw { needsVerification: true }
@@ -66,16 +66,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
   }
 
-  const forgotPassword = async (email:string) => {
-    await api.post('/forgot-password', { email })
+  const forgotPassword = async (email: string) => {
+    await api.post('/auth/forgot-password', { email })
   }
 
-  const resetPassword = async (email:string, otp:string, newPassword:string) => {
-    await api.post('/reset-password', { email, otp, newPassword })
+  const resetPassword = async (email: string, otp: string, newPassword: string) => {
+    await api.post('/auth/reset-password', { email, otp, newPassword })
   }
 
-  const resendOtp = async (email:string, purpose:string) => {
-    await api.post('/resend-otp', { email, purpose })
+  const resendOtp = async (email: string, purpose: string) => {
+    try {
+      await api.post('/auth/resend-otp', { email, purpose })
+    }
+    catch (err: any) {
+      throw err
+    }
   }
 
   return (

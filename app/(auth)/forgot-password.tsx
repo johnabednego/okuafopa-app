@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import {
   Alert,
   Button,
@@ -7,20 +7,21 @@ import {
   Text,
   View,
   ActivityIndicator,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+  TextInput
 } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { AuthContext } from '../../src/context/AuthContext'
 import COLORS from '../../src/theme/colors'
 import Logo from '../../src/components/Logo'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ForgotPassword() {
   const { forgotPassword } = useContext(AuthContext)
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const insets = useSafeAreaInsets()
+  const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
   const onSubmit = async () => {
     try {
@@ -28,21 +29,25 @@ export default function ForgotPassword() {
       await forgotPassword(email)
       Alert.alert('OTP sent', 'Check your email')
       router.push(`/reset-password/${encodeURIComponent(email)}` as any)
-    } catch {
-      Alert.alert('Error', 'Could not send OTP')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.message || e.message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <SafeAreaView
+      edges={['bottom']}
+      style={[styles.safeArea, { paddingBottom: insets.bottom }]}
     >
-      <ScrollView
-        contentContainerStyle={styles.container}
+      <KeyboardAwareScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        extraScrollHeight={20}
+        enableAutomaticScroll
       >
         <Logo variant="dark" />
         <Text style={styles.title}>Forgot Password</Text>
@@ -55,6 +60,9 @@ export default function ForgotPassword() {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
+            onFocus={(e) => {
+              scrollRef.current?.scrollToFocusedInput(e.target, 100)
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -67,12 +75,22 @@ export default function ForgotPassword() {
             </View>
           )}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
   container: {
     padding: 16,
     alignItems: 'center',
