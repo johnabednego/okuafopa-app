@@ -5,6 +5,7 @@ import { clearToken, getToken, setToken as storeToken } from '../utils/asyncStor
 type AuthContextType = {
   user: any | null
   token: string | null
+  setUser: React.Dispatch<React.SetStateAction<any | null>>
   signup: (data: any) => Promise<void>
   verifyEmail: (email: string, otp: string) => Promise<void>
   login: (email: string, password: string) => Promise<void>
@@ -21,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
-    ; (async () => {
+    (async () => {
       const t = await getToken()
       if (t) {
         setToken(t)
@@ -33,7 +34,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (data: any) => {
     await api.post('/auth/signup', data)
-    // after signup, backend responds with email only
   }
 
   const verifyEmail = async (email: string, otp: string) => {
@@ -53,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(u)
     } catch (err: any) {
       if (err.response?.status === 403 && err.response.data.message === 'Email not verified') {
-        // throw a special flag so UI can redirect to VerifyEmail
         throw { needsVerification: true }
       }
       throw err
@@ -75,19 +74,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resendOtp = async (email: string, purpose: string) => {
-    try {
-      await api.post('/auth/resend-otp', { email, purpose })
-    }
-    catch (err: any) {
-      throw err
-    }
+    await api.post('/auth/resend-otp', { email, purpose })
   }
 
   return (
     <AuthContext.Provider value={{
-      user, token,
-      signup, verifyEmail, login, logout,
-      forgotPassword, resetPassword, resendOtp
+      user,
+      token,
+      setUser,
+      signup,
+      verifyEmail,
+      login,
+      logout,
+      forgotPassword,
+      resetPassword,
+      resendOtp
     }}>
       {children}
     </AuthContext.Provider>

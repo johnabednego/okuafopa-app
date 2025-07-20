@@ -21,12 +21,17 @@ import Logo from '../../src/components/Logo'
 import { AuthContext } from '../../src/context/AuthContext'
 import { showError } from '../../src/utils/alert'
 import COLORS from '../../src/theme/colors'
+import { Ionicons } from '@expo/vector-icons'
 
+// Validation Schema
 const SignupSchema = Yup.object().shape({
   firstName: Yup.string().required('First name is required'),
   lastName: Yup.string().required('Last name is required'),
   email: Yup.string().email('Invalid email').required('Email is required'),
   password: Yup.string().min(6, 'At least 6 characters').required('Password is required'),
+  confirmPassword: Yup.string()
+    .required('Confirm password is required')
+    .oneOf([Yup.ref('password')], 'Passwords must match'),
   phoneNumber: Yup.string().required('Phone number is required'),
   country: Yup.string().required('Country is required'),
   city: Yup.string().required('City is required'),
@@ -37,9 +42,11 @@ export default function SignupScreen() {
   const router = useRouter()
   const [role, setRole] = useState<'farmer' | 'buyer'>('farmer')
   const insets = useSafeAreaInsets()
-  const [toggleAnim] = useState(new Animated.Value(0)) // 0 = farmer, 1 = buyer
+  const [toggleAnim] = useState(new Animated.Value(0))
   const scrollRef = useRef<KeyboardAwareScrollView>(null)
 
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const toggleRole = (newRole: 'farmer' | 'buyer') => {
     if (newRole !== role) {
@@ -69,7 +76,6 @@ export default function SignupScreen() {
         <Logo variant="dark" imageStyle={styles.logo} />
         <Text style={styles.title}>Register</Text>
 
-        {/* Role Toggle Tabs */}
         <View style={styles.toggleWrapper}>
           <Animated.View
             style={[
@@ -108,15 +114,17 @@ export default function SignupScreen() {
             lastName: '',
             email: '',
             password: '',
+            confirmPassword: '',
             phoneNumber: '',
             country: '',
             city: '',
-            role:role,
+            role: role,
           }}
           validationSchema={SignupSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              await signup({ ...values, role })
+              const { confirmPassword, ...safeValues } = values
+              await signup({ ...safeValues, role })
               Alert.alert(
                 'Verification Required',
                 'Please check your email for the OTP to verify your account'
@@ -145,10 +153,8 @@ export default function SignupScreen() {
                 onBlur={handleBlur('firstName')}
                 value={values.firstName}
                 error={errors.firstName}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.firstName}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
               <FormInput
                 label="Last Name"
@@ -156,10 +162,8 @@ export default function SignupScreen() {
                 onBlur={handleBlur('lastName')}
                 value={values.lastName}
                 error={errors.lastName}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.lastName}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
               <FormInput
                 label="Email"
@@ -169,23 +173,62 @@ export default function SignupScreen() {
                 onBlur={handleBlur('email')}
                 value={values.email}
                 error={errors.email}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.email}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
-              <FormInput
-                label="Password"
-                secureTextEntry
-                onChangeText={handleChange('password')}
-                onBlur={handleBlur('password')}
-                value={values.password}
-                error={errors.password}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
-                touched={touched.password}
-              />
+
+              {/* Password Field */}
+              <View style={styles.inputContainer}>
+                <FormInput
+                  label="Password"
+                  secureTextEntry={!showPassword}
+                  onChangeText={handleChange('password')}
+                  onBlur={handleBlur('password')}
+                  onFocus={(e) => {
+                    scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                  }}
+                  value={values.password}
+                  error={errors.password}
+                  touched={touched.password}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    size={20}
+                    color={COLORS.textLight}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Confirm Password Field */}
+              <View style={styles.inputContainer}>
+                <FormInput
+                  label="Confirm Password"
+                  secureTextEntry={!showConfirmPassword}
+                  onChangeText={handleChange('confirmPassword')}
+                  onBlur={handleBlur('confirmPassword')}
+                  onFocus={(e) => {
+                    scrollRef.current?.scrollToFocusedInput(e.target, 100)
+                  }}
+                  value={values.confirmPassword}
+                  error={errors.confirmPassword}
+                  touched={touched.confirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Ionicons
+                    name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                    size={20}
+                    color={COLORS.textLight}
+                  />
+                </TouchableOpacity>
+              </View>
+
               <FormInput
                 label="Phone Number"
                 keyboardType="phone-pad"
@@ -193,10 +236,8 @@ export default function SignupScreen() {
                 onBlur={handleBlur('phoneNumber')}
                 value={values.phoneNumber}
                 error={errors.phoneNumber}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.phoneNumber}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
               <FormInput
                 label="Country"
@@ -204,10 +245,8 @@ export default function SignupScreen() {
                 onBlur={handleBlur('country')}
                 value={values.country}
                 error={errors.country}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.country}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
               <FormInput
                 label="City"
@@ -215,10 +254,8 @@ export default function SignupScreen() {
                 onBlur={handleBlur('city')}
                 value={values.city}
                 error={errors.city}
-                onFocus={(e) => {
-                  scrollRef.current?.scrollToFocusedInput(e.target, 100)
-                }}
                 touched={touched.city}
+                onFocus={(e) => scrollRef.current?.scrollToFocusedInput(e.target, 100)}
               />
 
               {isSubmitting ? (
@@ -314,6 +351,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 8,
     padding: 16,
+  },
+  inputContainer: {
+    width: '100%',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 16,
+    top: 26,
+    padding: 4,
   },
   buttonWrapper: {
     alignSelf: 'stretch',
