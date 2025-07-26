@@ -1,4 +1,6 @@
-{
+import 'dotenv/config';
+
+export default {
   "expo": {
     "name": "okuafopa",
     "slug": "okuafopa",
@@ -47,7 +49,9 @@
       "router": {},
       "eas": {
         "projectId": "ad3590f9-0916-44ee-a7c7-d2d68884b48c"
-      }
+      },
+      "CLOUDINARY_CLOUD_NAME": process.env.CLOUDINARY_CLOUD_NAME,
+      "CLOUDINARY_UPLOAD_PRESET": process.env.CLOUDINARY_UPLOAD_PRESET,
     }
   }
 }

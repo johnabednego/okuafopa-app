@@ -1,7 +1,8 @@
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
-import ProductsScreen from '../../../src/screens/buyer/ProductsScreen'
+import ProductsListScreen from '../../../src/screens/buyer/ProductsListScreen'
+import ProductDetailScreen from '../../../src/screens/buyer/ProductDetailScreen'
 import OrdersScreen from '../../../src/screens/buyer/OrdersScreen'
 import ProfileScreen from '../../profile'
 
@@ -24,7 +25,7 @@ export default function BuyerTabs() {
                 }
             })}
         >
-            <Tab.Screen name="Products" component={ProductsScreen} />
+            <Tab.Screen name="Products" component={ProductsListScreen} />
             <Tab.Screen name="Orders" component={OrdersScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
