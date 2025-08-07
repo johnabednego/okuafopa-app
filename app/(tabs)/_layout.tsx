@@ -18,15 +18,15 @@ export default function TabsLayout() {
         headerTitle: 'Okuafopa',
         contentStyle: { backgroundColor: COLORS.background },
         animation: 'fade',
-        headerRight: () => (
-          <TouchableOpacity
-            onPress={() => {
-              logout()
-              router.replace('/')  // back to public landing
-            }} style={{ marginRight: 12 }}>
-            <Text style={{ color: COLORS.onPrimary, fontWeight: 'bold' }}>Log Out</Text>
-          </TouchableOpacity>
-        )
+        // headerRight: () => (
+        //   <TouchableOpacity
+        //     onPress={() => {
+        //       logout()
+        //       router.replace('/')  // back to public landing
+        //     }} style={{ marginRight: 12 }}>
+        //     <Text style={{ color: COLORS.onPrimary, fontWeight: 'bold' }}>Log Out</Text>
+        //   </TouchableOpacity>
+        // )
       }}
     />
   )

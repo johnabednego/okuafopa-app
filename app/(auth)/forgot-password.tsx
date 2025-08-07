@@ -7,7 +7,8 @@ import {
   Text,
   View,
   ActivityIndicator,
-  TextInput
+  TextInput,
+  Dimensions
 } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { AuthContext } from '../../src/context/AuthContext'
@@ -129,6 +130,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   buttonWrapper: {
+    flex: 1,
+    width: Dimensions.get('window').width,
     marginTop: 8,
   }
 })

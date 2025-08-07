@@ -3,8 +3,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import {
   View, Text, Button, ActivityIndicator,
-  Alert, Image, TouchableOpacity, FlatList, StyleSheet,
-  LayoutAnimation, UIManager, Platform, Animated
+  Alert, Image, TouchableOpacity, FlatList, StyleSheet
 } from 'react-native'
 import api from '../../api/client'
 import COLORS from '../../theme/colors'
@@ -37,7 +36,6 @@ export default function ProductsScreen() {
   const [loadingList, setLoadingList] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null)
-  const [fadeAnims, setFadeAnims] = useState<{ [key: string]: Animated.Value }>({})
 
   const loadMyProducts = async () => {
     setLoadingList(true)
@@ -77,7 +75,9 @@ export default function ProductsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.tabBar}>
-          <Button title="← Back to List" onPress={() => setEditingProductId(null)} color={COLORS.primary} />
+          <View style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" }}>
+            <Button title="← Back to List" onPress={() => setEditingProductId(null)} color={COLORS.primary} />
+          </View>
         </View>
         <EditProductScreen
           id={editingProductId}
@@ -94,8 +94,9 @@ export default function ProductsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.tabBar}>
-          <Button title="My Products" onPress={() => setTab('list')} color={COLORS.primary} />
-          <Button title="＋ Add New" onPress={() => setTab('create')} color={COLORS.primary} />
+          <View style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "flex-end", alignItems: "flex-end" }}>
+            <Button title="＋ Add New" onPress={() => setTab('create')} color={COLORS.primary} />
+          </View>
         </View>
 
         {loadingList ? (
@@ -192,8 +193,9 @@ export default function ProductsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.tabBar}>
-        <Button title="My Products" onPress={() => setTab('list')} color={COLORS.primary} />
-        <Button title="＋ Add New" onPress={() => setTab('create')} color={COLORS.primary} />
+        <View style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" }}>
+          <Button title="← Back to List" onPress={() => setTab('list')} color={COLORS.primary} />
+        </View>
       </View>
       <CreateProductScreen
         onDone={() => {
