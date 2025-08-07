@@ -47,7 +47,10 @@ export default function LoginScreen() {
         enableAutomaticScroll
       >
         <Logo variant="dark" imageStyle={styles.logo} />
-        <Text style={styles.title}>Log In</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.subTitle}>Sign In to your account</Text>
+        </View>
 
         <Formik
           initialValues={{ email: '', password: '' }}
@@ -124,11 +127,12 @@ export default function LoginScreen() {
                 />
               ) : (
                 <View style={styles.buttonWrapper}>
-                  <Button
-                    title="Log In"
-                    color={COLORS.primary}
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: COLORS.primary }]}
                     onPress={handleSubmit as any}
-                  />
+                  >
+                    <Text style={{ color: COLORS.white, fontWeight: 500, fontSize: 16 }}>Sign In</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -159,25 +163,36 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 32,
     alignItems: 'center',
   },
   logo: {
-    marginBottom: 24,
+    marginBottom: 30,
+  },
+  titleContainer: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center"
   },
   title: {
-    fontSize: 28,
-    color: COLORS.primary,
+    fontSize: 24,
+    color: COLORS.dark,
     fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
+    textAlign: 'left',
+  },
+  subTitle: {
+    fontSize: 16,
+    color: COLORS.mainGray,
+    fontWeight: 'normal',
   },
   form: {
     alignSelf: 'stretch',
     backgroundColor: COLORS.white,
     borderRadius: 8,
-    padding: 16,
+    marginTop: 24
   },
   buttonWrapper: {
     alignSelf: 'stretch',
@@ -212,4 +227,16 @@ const styles = StyleSheet.create({
     top: 26,
     padding: 4,
   },
+  button: {
+    width: '100%',
+    height: 46,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: COLORS.primary,
+    borderRadius: 5,
+  }
 })

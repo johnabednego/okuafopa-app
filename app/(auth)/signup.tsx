@@ -266,18 +266,19 @@ export default function SignupScreen() {
                 />
               ) : (
                 <View style={styles.buttonWrapper}>
-                  <Button
-                    title="Create Account"
-                    color={COLORS.primary}
+                  <TouchableOpacity
+                    style={[styles.button, { backgroundColor: COLORS.primary }]}
                     onPress={handleSubmit as any}
-                  />
+                  >
+                    <Text style={{ color: COLORS.white, fontWeight: 500, fontSize: 16 }}>Create Account</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
               <View style={styles.loginRow}>
                 <Text style={styles.loginText}>Already have an account? </Text>
                 <TouchableOpacity onPress={() => router.replace('/login')}>
-                  <Text style={styles.loginLink}>Log In</Text>
+                  <Text style={styles.loginLink}>Sign In</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -295,12 +296,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 20,
     paddingBottom: 32,
     alignItems: 'center',
   },
   logo: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
@@ -313,8 +314,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     position: 'relative',
     height: 48,
-    borderRadius: 30,
-    backgroundColor: COLORS.grayLight,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: COLORS.primary,
+    borderRadius: 10,
+    backgroundColor: COLORS.white,
     overflow: 'hidden',
     marginBottom: 24,
     elevation: 3,
@@ -329,7 +333,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '50%',
     backgroundColor: COLORS.primary,
-    borderRadius: 30,
     zIndex: 0,
   },
   toggleHalf: {
@@ -339,7 +342,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   toggleLabel: {
-    color: COLORS.text,
+    color: COLORS.primary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -366,6 +369,18 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     alignSelf: 'stretch',
     marginTop: 12,
+  },
+  button: {
+    width: '100%',
+    height: 46,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderStyle: "solid",
+    borderColor: COLORS.primary,
+    borderRadius: 5,
   },
   loginRow: {
     flexDirection: 'row',

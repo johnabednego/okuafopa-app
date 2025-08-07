@@ -8,9 +8,11 @@ export default {
   secondary: '#E5F4EE',
   white: '#FFFFFF',
   black: '#000000',
+  dark: '#1D1E25',
+  mainGray: '#808D9E',
   gray: '#888888',
   danger: '#ff4d4d',
   success: '#28a745',
   grayLight: '#f0f0f0',
-   textLight: "#9A8478",
+  textLight: "#9A8478",
 };
