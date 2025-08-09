@@ -9,7 +9,7 @@ export default function ProductsScreen() {
   const router = useRouter()
 
   useEffect(() => {
-    api.get('/products').then(res => setProducts(res.data.data))
+    api.get('/product-listings').then(res => setProducts(res.data.data))
   }, [])
 
   return (

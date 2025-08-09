@@ -3,6 +3,7 @@ import { Stack, useRouter } from 'expo-router'
 import { TouchableOpacity, Text } from 'react-native'
 import COLORS from '../../src/theme/colors'
 import { AuthContext } from '../../src/context/AuthContext'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function TabsLayout() {
   const router = useRouter()
@@ -18,15 +19,25 @@ export default function TabsLayout() {
         headerTitle: 'Okuafopa',
         contentStyle: { backgroundColor: COLORS.background },
         animation: 'fade',
-        // headerRight: () => (
-        //   <TouchableOpacity
-        //     onPress={() => {
-        //       logout()
-        //       router.replace('/')  // back to public landing
-        //     }} style={{ marginRight: 12 }}>
-        //     <Text style={{ color: COLORS.onPrimary, fontWeight: 'bold' }}>Log Out</Text>
-        //   </TouchableOpacity>
-        // )
+        headerRight: () => (
+          // <TouchableOpacity
+          //   onPress={() => {
+          //     logout()
+          //     router.replace('/')  // back to public landing
+          //   }} style={{ marginRight: 12 }}>
+          //   <Text style={{ color: COLORS.onPrimary, fontWeight: 'bold' }}>Log Out</Text>
+          // </TouchableOpacity>
+          <Ionicons
+            name="log-out-outline"
+            size={24}
+            color="white"
+            style={{ marginRight: 16 }}
+            onPress={() => {
+              logout()
+              router.replace('/')  // back to public landing
+            }}
+          />
+        )
       }}
     />
   )

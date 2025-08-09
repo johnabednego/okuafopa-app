@@ -10,7 +10,7 @@ export default function ProductDetail() {
   const router = useRouter()
 
   useEffect(() => {
-    api.get(`/products/${id}`).then(res => setProduct(res.data))
+    api.get(`/product-listings/${id}`).then(res => setProduct(res.data))
   }, [id])
 
   if (!product) return <Text>Loading…</Text>

@@ -3,13 +3,13 @@ import React, { useContext } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
 import { AuthContext } from '../../../src/context/AuthContext'
-
+import HomeScreen from '../../../src/screens/HomeScreen'
 import ProductsScreen from '../../../src/screens/farmer/ProductsScreen'
 import OrdersScreen from '../../../src/screens/farmer/OrdersScreen'
 import ProfileScreen from '../../profile/index'
 import { useRouter } from 'expo-router'
 
-type RouteName = 'Products' | 'Orders' | 'Profile'
+type RouteName = 'Home' | 'Products' | 'Orders' | 'Profile'
 
 const Tab = createBottomTabNavigator()
 
@@ -23,20 +23,21 @@ export default function FarmerTabs() {
         headerStyle: { backgroundColor: '#025F3B' },
         headerTintColor: '#fff',
         tabBarActiveTintColor: '#025F3B',
-        headerRight: () => (
-          <Ionicons
-            name="log-out-outline"
-            size={24}
-            color="white"
-            style={{ marginRight: 16 }}
-            onPress={() => {
-              logout()
-              router.replace('/')  // back to public landing
-            }}
-          />
-        ),
+        // headerRight: () => (
+        //   <Ionicons
+        //     name="log-out-outline"
+        //     size={24}
+        //     color="white"
+        //     style={{ marginRight: 16 }}
+        //     onPress={() => {
+        //       logout()
+        //       router.replace('/')  // back to public landing
+        //     }}
+        //   />
+        // ),
         tabBarIcon: ({ color, size }) => {
           const icons: Record<RouteName, keyof typeof Ionicons.glyphMap> = {
+            Home: 'home',
             Products: 'leaf-outline',
             Orders: 'list-outline',
             Profile: 'person-outline',
@@ -46,6 +47,7 @@ export default function FarmerTabs() {
         },
       })}
     >
+      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Products" component={ProductsScreen} options={{ title: 'My Products' }} />
       <Tab.Screen name="Orders" component={OrdersScreen} options={{ title: 'Orders' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />

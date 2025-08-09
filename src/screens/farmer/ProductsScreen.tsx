@@ -1,5 +1,3 @@
-// src/screens/farmer/ProductsScreen.tsx
-
 import React, { useState, useContext, useEffect } from 'react'
 import {
   View, Text, Button, ActivityIndicator,
@@ -12,6 +10,7 @@ import EditProductScreen from './EditProductScreen'
 import CreateProductScreen from './CreateProductScreen'
 
 type Product = {
+  productItem: any
   _id: string
   title: string
   description: string
@@ -40,7 +39,7 @@ export default function ProductsScreen() {
   const loadMyProducts = async () => {
     setLoadingList(true)
     try {
-      const res = await api.get('/products?farmer=me')
+      const res = await api.get('/product-listings?farmer=me')
       setProducts(res.data.data)
     } catch (e: any) {
       Alert.alert('Error', e.message)
@@ -57,7 +56,7 @@ export default function ProductsScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await api.delete(`/products/${id}`)
+            await api.delete(`/product-listings/${id}`)
             loadMyProducts()
           } catch (e: any) {
             Alert.alert('Error', e.message)
@@ -116,7 +115,7 @@ export default function ProductsScreen() {
                     {item.images[0] && <Image source={{ uri: item.images[0] }} style={styles.cardImg} />}
 
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={styles.cardTitle}>{item.title}</Text>
+                      <Text style={styles.cardTitle}>{item.productItem?.productName}</Text>
                       <Text>${item.price} · Qty: {item.quantity}</Text>
                     </View>
 
@@ -138,7 +137,7 @@ export default function ProductsScreen() {
 
                       <View style={styles.metaRow}>
                         <Text style={styles.metaLabel}>🏷️ Category:</Text>
-                        <Text style={styles.metaValue}>{item.category}</Text>
+                        <Text style={styles.metaValue}>{item.productItem?.category?.categoryName}</Text>
                       </View>
 
                       <View style={styles.metaRow}>
@@ -159,8 +158,9 @@ export default function ProductsScreen() {
                       <View style={styles.metaRow}>
                         <Text style={styles.metaLabel}>🚚 Delivery:</Text>
                         <Text style={styles.metaValue}>
-                          {item.deliveryOptions.pickup ? 'Pickup ' : ''}
-                          {item.deliveryOptions.thirdParty ? 'Third-party' : ''}
+                          {item?.deliveryOptions?.pickup ? 'Pickup' : ''}
+                          {item?.deliveryOptions?.pickup && item.deliveryOptions?.thirdParty ? ', ' : ''}
+                          {item?.deliveryOptions?.thirdParty ? 'Third-party' : ''}
                         </Text>
                       </View>
 
@@ -192,8 +192,12 @@ export default function ProductsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabBar}>
-        <View style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" }}>
+      <View style={[styles.tabBar, {
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.grayLight
+      }]}>
+        <View style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={styles.title}>List New Product</Text>
           <Button title="← Back to List" onPress={() => setTab('list')} color={COLORS.primary} />
         </View>
       </View>
@@ -209,7 +213,16 @@ export default function ProductsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  tabBar: { flexDirection: 'row', justifyContent: 'space-around', padding: 8 },
+  tabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 8,
+  },
+  title: {
+    fontWeight: 700,
+    fontSize: 20,
+    color: COLORS.primary,
+  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 6,

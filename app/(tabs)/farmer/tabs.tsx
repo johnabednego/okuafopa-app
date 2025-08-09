@@ -2,6 +2,7 @@ import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
 import ProductsScreen from '../../../src/screens/farmer/ProductsScreen'
+import HomeScreen from '../../../src/screens/HomeScreen'
 import OrdersScreen from '../../../src/screens/farmer/OrdersScreen'
 import ProfileScreen from '../../profile'
 
@@ -15,6 +16,7 @@ export default function FarmerTabs() {
         headerShown: false,
         tabBarIcon: ({ color, size }) => {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
+            Home: 'home',
             Products: 'leaf-outline',
             Orders: 'list-outline',
             Profile: 'person-outline',
@@ -23,6 +25,7 @@ export default function FarmerTabs() {
         }
       })}
     >
+      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Products" component={ProductsScreen} />
       <Tab.Screen name="Orders" component={OrdersScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
