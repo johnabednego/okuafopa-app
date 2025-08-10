@@ -1,4 +1,3 @@
-// app/(tabs)/farmer/_layout.tsx
 import React, { useContext } from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
@@ -47,7 +46,7 @@ export default function FarmerTabs() {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeScreen}  options={{ title: 'Home', headerShown: false }}/>
       <Tab.Screen name="Products" component={ProductsScreen} options={{ title: 'My Products' }} />
       <Tab.Screen name="Orders" component={OrdersScreen} options={{ title: 'Orders' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />

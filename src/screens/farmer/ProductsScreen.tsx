@@ -116,7 +116,7 @@ export default function ProductsScreen() {
 
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Text style={styles.cardTitle}>{item.productItem?.productName}</Text>
-                      <Text>${item.price} · Qty: {item.quantity}</Text>
+                      <Text>₵{item.price} · Qty: {item.quantity}</Text>
                     </View>
 
                     <TouchableOpacity
@@ -142,7 +142,7 @@ export default function ProductsScreen() {
 
                       <View style={styles.metaRow}>
                         <Text style={styles.metaLabel}>💰 Price:</Text>
-                        <Text style={styles.metaValue}>${item.price}</Text>
+                        <Text style={styles.metaValue}>₵{item.price}</Text>
                       </View>
 
                       <View style={styles.metaRow}>
