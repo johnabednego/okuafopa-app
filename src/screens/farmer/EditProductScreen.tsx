@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react'
 import {
-  View, Text, TextInput, Button, ScrollView,
-  ActivityIndicator, Alert, Image, TouchableOpacity, StyleSheet, Switch
+  View, Text, ScrollView, TextInput, Switch, TouchableOpacity, Image,
+  ActivityIndicator, Alert, StyleSheet
 } from 'react-native'
-import MapView, { Marker, Region } from 'react-native-maps'
+import RNPickerSelect from 'react-native-picker-select'
+import MapView, { Marker } from 'react-native-maps'
 import * as ImagePicker from 'expo-image-picker'
 import * as Location from 'expo-location'
 import { uploadImageAsync } from '../../utils/cloudinary'
-import api from '../../api/client'
-import COLORS from '../../theme/colors'
 import { AuthContext } from '../../context/AuthContext'
+import COLORS from '../../theme/colors'
+import api from '../../api/client'
 
 interface Props {
   id: string
@@ -19,153 +20,205 @@ interface Props {
 export default function EditProductScreen({ id, onDone }: Props) {
   const { user } = useContext(AuthContext)
 
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  type Category = { _id: string; categoryName: string }
+  type ProductItem = { _id: string; productName: string }
 
-  const [title, setTitle] = useState('')
-  const [description, setDesc] = useState('')
+  const [categories, setCategories] = useState<Category[]>([])
+  const [productItems, setProductItems] = useState<ProductItem[]>([])
+
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedProductItem, setSelectedProductItem] = useState('')
+
+  const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
   const [quantity, setQuantity] = useState('')
-  const [category, setCategory] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [isActive, setIsActive] = useState(true)
   const [deliveryOptions, setDeliveryOptions] = useState({ pickup: true, thirdParty: false })
+  const [marker, setMarker] = useState<{ latitude: number, longitude: number } | null>(null)
+  const [region, setRegion] = useState({ latitude: 0, longitude: 0, latitudeDelta: 0.01, longitudeDelta: 0.01 })
 
-  const [region, setRegion] = useState<Region>({
-    latitude: 0, longitude: 0, latitudeDelta: 0.01, longitudeDelta: 0.01
-  })
-  const [marker, setMarker] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  type ErrorState = {
+    category?: string
+    productItem?: string
+    description?: string
+    price?: string
+    quantity?: string
+    images?: string
+    location?: string
+  }
+  const [errors, setErrors] = useState<ErrorState>({})
 
   useEffect(() => {
-    api.get(`/products/${id}`)
-      .then(res => {
-        const p = res.data
-        setTitle(p.title)
-        setDesc(p.description)
-        setPrice(String(p.price))
-        setQuantity(String(p.quantity))
-        setCategory(p.category)
-        setImages(p.images || [])
-        setIsActive(p.isActive)
-        setDeliveryOptions(p.deliveryOptions || { pickup: true, thirdParty: false })
-        if (p.location?.coordinates) {
-          const [lng, lat] = p.location.coordinates
-          setRegion(r => ({ ...r, latitude: lat, longitude: lng }))
-          setMarker({ latitude: lat, longitude: lng })
-        }
-      })
-      .catch(() => Alert.alert('Error', 'Failed to load product'))
-      .finally(() => setLoading(false))
-  }, [id])
+    fetchCategories()
+    loadProduct()
+  }, [])
 
-  const validate = () => {
-    const newErrors: { [key: string]: string } = {}
-    if (!title.trim()) newErrors.title = 'This is required'
-    if (!description.trim()) newErrors.description = 'This is required'
-    if (!price.trim()) newErrors.price = 'This is required'
-    else if (isNaN(Number(price))) newErrors.price = 'Must be a number'
-    if (!quantity.trim()) newErrors.quantity = 'This is required'
-    else if (isNaN(Number(quantity))) newErrors.quantity = 'Must be a number'
-    if (!category.trim()) newErrors.category = 'This is required'
-    if (!images.length) newErrors.images = 'At least one image is required'
-    if (!marker) newErrors.location = 'Select a location on the map'
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchProductItems(selectedCategory)
+    } else {
+      setProductItems([])
+      setSelectedProductItem('')
+    }
+  }, [selectedCategory])
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/product-categories')
+      setCategories(res.data || [])
+    } catch {
+      Alert.alert('Error', 'Failed to load categories')
+    }
+  }
+
+  const fetchProductItems = async (categoryId: string) => {
+    try {
+      const res = await api.get(`/product-items?category=${categoryId}`)
+      setProductItems(res.data || [])
+    } catch {
+      Alert.alert('Error', 'Failed to load product items')
+    }
+  }
+
+  const loadProduct = async () => {
+    try {
+      const res = await api.get(`/product-listings/${id}`)
+      const p = res.data
+      setSelectedCategory(p.productItem?.category?._id || '')
+      setSelectedProductItem(p.productItem?._id || '')
+      setDescription(p.description || '')
+      setPrice(String(p.price || ''))
+      setQuantity(String(p.quantity || ''))
+      setImages(p.images || [])
+      setIsActive(p.isActive)
+      setDeliveryOptions(p.deliveryOptions || { pickup: true, thirdParty: false })
+
+      if (p.location?.coordinates) {
+        const [lng, lat] = p.location.coordinates
+        setRegion(r => ({ ...r, latitude: lat, longitude: lng }))
+        setMarker({ latitude: lat, longitude: lng })
+      } else {
+        getLocation()
+      }
+    } catch {
+      Alert.alert('Error', 'Failed to load product')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync()
+    if (status !== 'granted') return
+    const loc = await Location.getCurrentPositionAsync({})
+    setRegion(r => ({ ...r, latitude: loc.coords.latitude, longitude: loc.coords.longitude }))
+    setMarker({ latitude: loc.coords.latitude, longitude: loc.coords.longitude })
   }
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7 })
     if (!result.canceled && result.assets.length) {
-      setSaving(true)
+      setUploading(true)
       try {
         const url = await uploadImageAsync(result.assets[0].uri)
-        setImages(imgs => [...imgs, url])
+        setImages(prev => [...prev, url])
       } catch (e: any) {
         Alert.alert('Upload failed', e.message)
       } finally {
-        setSaving(false)
+        setUploading(false)
       }
     }
   }
 
   const removeImage = (index: number) => {
-    const newImages = [...images]
-    newImages.splice(index, 1)
-    setImages(newImages)
+    if (images.length === 1) {
+      Alert.alert('Error', 'At least one image is required')
+      return
+    }
+    setImages(imgs => imgs.filter((_, i) => i !== index))
+  }
+
+  const validate = () => {
+    const newErrors: ErrorState = {}
+    if (!selectedCategory) newErrors.category = 'Select a category'
+    if (!selectedProductItem) newErrors.productItem = 'Select a product item'
+    if (!description.trim()) newErrors.description = 'Description required'
+
+    if (!price.trim()) newErrors.price = 'Price required'
+    else if (isNaN(Number(price))) newErrors.price = 'Must be a number'
+
+    if (!quantity.trim()) newErrors.quantity = 'Quantity required'
+    else if (isNaN(Number(quantity))) newErrors.quantity = 'Must be a number'
+
+    if (!images.length) newErrors.images = 'At least one image is required'
+    if (!marker) newErrors.location = 'Select a location on map'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSave = async () => {
     if (!validate()) return
-
-    setSaving(true)
-    const payload = {
-      title,
-      description,
-      price: parseFloat(price),
-      quantity: parseInt(quantity, 10),
-      category,
-      images,
-      isActive,
-      deliveryOptions,
-      location: {
-        type: 'Point',
-        coordinates: [marker!.longitude, marker!.latitude],
-      },
-    }
-
+    setUploading(true)
     try {
-      await api.patch(`/products/${id}`, payload)
-      Alert.alert('Saved', `"${title}" updated`)
+      const payload = {
+        productItem: selectedProductItem,
+        description,
+        price: parseFloat(price),
+        quantity: parseInt(quantity, 10),
+        images,
+        isActive,
+        deliveryOptions,
+        location: marker
+          ? { type: 'Point', coordinates: [marker.longitude, marker.latitude] }
+          : undefined
+      }
+      await api.patch(`/product-listings/${id}`, payload)
+      Alert.alert('Success', 'Product listing updated')
       onDone()
     } catch (e: any) {
       Alert.alert('Error', e.response?.data?.message || e.message)
     } finally {
-      setSaving(false)
+      setUploading(false)
     }
   }
 
-  if (loading) {
-    return <ActivityIndicator style={{ flex: 1, justifyContent: 'center' }} />
-  }
+  if (loading) return <ActivityIndicator style={{ flex: 1 }} />
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>Title</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} />
-      {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
+    <ScrollView style={{ backgroundColor: COLORS.background }} contentContainerStyle={{ padding: 16 }}>
+      <Text style={styles.label}>Category</Text>
+      <RNPickerSelect
+        onValueChange={val => setSelectedCategory(val)}
+        items={categories.map(c => ({ label: c.categoryName, value: c._id }))}
+        value={selectedCategory}
+        placeholder={{ label: 'Select category', value: '' }}
+      />
+      {errors.category && <Text style={styles.error}>{errors.category}</Text>}
+
+      <Text style={styles.label}>Product Item</Text>
+      <RNPickerSelect
+        onValueChange={val => setSelectedProductItem(val)}
+        items={productItems.map(p => ({ label: p.productName, value: p._id }))}
+        value={selectedProductItem}
+        placeholder={{ label: 'Select product item', value: '' }}
+      />
+      {errors.productItem && <Text style={styles.error}>{errors.productItem}</Text>}
 
       <Text style={styles.label}>Description</Text>
-      <TextInput
-        style={[styles.input, { height: 80 }]}
-        multiline value={description}
-        onChangeText={setDesc}
-      />
-      {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+      <TextInput style={[styles.input, { height: 80 }]} multiline value={description} onChangeText={setDescription} />
+      {errors.description && <Text style={styles.error}>{errors.description}</Text>}
 
       <Text style={styles.label}>Price</Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="decimal-pad"
-        value={price}
-        onChangeText={setPrice}
-      />
-      {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
+      <TextInput style={styles.input} keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
+      {errors.price && <Text style={styles.error}>{errors.price}</Text>}
 
       <Text style={styles.label}>Quantity</Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="number-pad"
-        value={quantity}
-        onChangeText={setQuantity}
-      />
-      {errors.quantity && <Text style={styles.errorText}>{errors.quantity}</Text>}
-
-      <Text style={styles.label}>Category</Text>
-      <TextInput style={styles.input} value={category} onChangeText={setCategory} />
-      {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
+      <TextInput style={styles.input} keyboardType="number-pad" value={quantity} onChangeText={setQuantity} />
+      {errors.quantity && <Text style={styles.error}>{errors.quantity}</Text>}
 
       <Text style={styles.label}>Active</Text>
       <Switch
@@ -186,7 +239,7 @@ export default function EditProductScreen({ id, onDone }: Props) {
         />
       </View>
       <View style={styles.row}>
-        <Text>Third‑Party</Text>
+        <Text>Third-Party</Text>
         <Switch
           value={deliveryOptions.thirdParty}
           onValueChange={v => setDeliveryOptions(o => ({ ...o, thirdParty: v }))}
@@ -196,78 +249,47 @@ export default function EditProductScreen({ id, onDone }: Props) {
       </View>
 
       <Text style={styles.label}>Images</Text>
-      <View style={styles.imageRow}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
         {images.map((uri, i) => (
           <View key={i} style={{ position: 'relative' }}>
             <Image source={{ uri }} style={styles.thumb} />
             {images.length > 1 && (
-              <TouchableOpacity
-                onPress={() => removeImage(i)}
-                style={styles.removeBtn}
-              >
+              <TouchableOpacity onPress={() => removeImage(i)} style={styles.removeBtn}>
                 <Text style={{ color: '#fff', fontSize: 12 }}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
         ))}
-        <TouchableOpacity style={styles.addBtn} onPress={pickImage}>
-          {saving
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.plus}>＋</Text>
-          }
+        <TouchableOpacity onPress={pickImage} style={styles.addBtn}>
+          {uploading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>＋</Text>}
         </TouchableOpacity>
       </View>
-      {errors.images && <Text style={styles.errorText}>{errors.images}</Text>}
+      {errors.images && <Text style={styles.error}>{errors.images}</Text>}
 
-      <Text style={styles.label}>Tap on the map to select location</Text>
+      <Text style={styles.label}>Select Location</Text>
       <MapView
-        style={styles.map}
+        style={{ height: 200 }}
         region={region}
         onPress={e => setMarker(e.nativeEvent.coordinate)}
       >
         {marker && <Marker coordinate={marker} />}
       </MapView>
-      {errors.location && <Text style={styles.errorText}>{errors.location}</Text>}
+      {errors.location && <Text style={styles.error}>{errors.location}</Text>}
 
-      <View style={{ marginVertical: 20 }}>
-        {saving
-          ? <ActivityIndicator color={COLORS.primary} size="large" />
-          : <Button
-            title="Save Changes"
-            onPress={handleSave}
-            color={COLORS.primary}
-          />
-        }
-      </View>
+      <TouchableOpacity onPress={handleSave} style={styles.submitBtn}>
+        {uploading ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff' }}>Save Changes</Text>}
+      </TouchableOpacity>
     </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 16 },
   label: { marginTop: 12, fontWeight: '600', color: COLORS.text },
-  input: {
-    borderWidth: 1, borderColor: COLORS.grayLight,
-    borderRadius: 6, padding: 8, backgroundColor: '#fff'
-  },
-  row: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginVertical: 8,
-  },
-  imageRow: { flexDirection: 'row', flexWrap: 'wrap', marginVertical: 8 },
+  input: { borderWidth: 1, borderColor: COLORS.grayLight, padding: 8, borderRadius: 6, backgroundColor: '#fff' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 8 },
+  error: { color: 'red', fontSize: 12 },
   thumb: { width: 60, height: 60, borderRadius: 6, margin: 4 },
-  addBtn: {
-    width: 60, height: 60, borderRadius: 6,
-    backgroundColor: COLORS.primary, justifyContent: 'center',
-    alignItems: 'center', margin: 4,
-  },
-  plus: { color: '#fff', fontSize: 28, lineHeight: 28 },
-  removeBtn: {
-    position: 'absolute', top: -4, right: -4,
-    backgroundColor: COLORS.primary,
-    borderRadius: 12, padding: 4, zIndex: 1,
-  },
-  map: { width: '100%', height: 200, borderRadius: 6, marginTop: 8 },
-  errorText: { color: 'red', fontSize: 12, marginTop: 4 },
+  addBtn: { width: 60, height: 60, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', borderRadius: 6, margin: 4 },
+  removeBtn: { position: 'absolute', top: -4, right: -4, backgroundColor: COLORS.primary, borderRadius: 12, padding: 4 },
+  submitBtn: { backgroundColor: COLORS.primary, padding: 14, borderRadius: 8, marginTop: 20, alignItems: 'center' }
 })

@@ -8,6 +8,10 @@ import COLORS from '../../theme/colors'
 import { AuthContext } from '../../context/AuthContext'
 import EditProductScreen from './EditProductScreen'
 import CreateProductScreen from './CreateProductScreen'
+import { Ionicons } from '@expo/vector-icons'
+
+import ImageViewer from 'react-native-image-zoom-viewer';
+import Modal from 'react-native-modal';
 
 type Product = {
   productItem: any
@@ -35,6 +39,11 @@ export default function ProductsScreen() {
   const [loadingList, setLoadingList] = useState(false)
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [zoomImages, setZoomImages] = useState<{ url: string }[]>([]);
+  const [zoomVisible, setZoomVisible] = useState(false);
+  const [zoomStartIndex, setZoomStartIndex] = useState(0);
 
   const loadMyProducts = async () => {
     setLoadingList(true)
@@ -103,88 +112,148 @@ export default function ProductsScreen() {
         ) : products.length === 0 ? (
           <Text style={{ textAlign: 'center', marginTop: 40, color: COLORS.text }}>No products found.</Text>
         ) : (
-          <FlatList
-            data={products}
-            keyExtractor={p => p._id}
-            contentContainerStyle={{ padding: 16 }}
-            renderItem={({ item }) => {
-              const isExpanded = expandedProductId === item._id
-              return (
-                <View style={[styles.card, isExpanded && { flexDirection: 'column', alignItems: 'flex-start' }]}>
-                  <View style={styles.cardHeader}>
-                    {item.images[0] && <Image source={{ uri: item.images[0] }} style={styles.cardImg} />}
 
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Text style={styles.cardTitle}>{item.productItem?.productName}</Text>
-                      <Text>₵{item.price} · Qty: {item.quantity}</Text>
+          <View style={styles.container}>
+            {/**Product Listing */}
+            <FlatList
+              data={products}
+              keyExtractor={p => p._id}
+              contentContainerStyle={{ padding: 16 }}
+              renderItem={({ item }) => {
+                const isExpanded = expandedProductId === item._id
+                return (
+                  <View style={[styles.card, isExpanded && { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                    <View style={styles.cardHeader}>
+                      {item.images[0] && <Image source={{ uri: item.images[0] }} style={styles.cardImg} />}
+
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={styles.cardTitle}>{item.productItem?.productName}</Text>
+                        <Text>₵{item.price} . Qty: {item.quantity}</Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => setExpandedProductId(prev => (prev === item._id ? null : item._id))}
+                        style={styles.expandBtn}
+                      >
+                        <Text style={styles.expandIcon}>{isExpanded ? '−' : '＋'}</Text>
+                      </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity
-                      onPress={() => setExpandedProductId(prev => (prev === item._id ? null : item._id))}
-                      style={styles.expandBtn}
-                    >
-                      <Text style={styles.expandIcon}>{isExpanded ? '−' : '＋'}</Text>
-                    </TouchableOpacity>
+                    {isExpanded && (
+                      <View style={styles.expandedContainer}>
+                        {/* Carousel Container */}
+                        <View style={styles.imageCarousel}>
+                          <View style={styles.imageViewIcon}>
+                            <Ionicons name="eye" size={30} color="white" />
+                          </View>
+
+                          <View style={styles.imageClickable}>
+                            <Image
+                              source={{ uri: item.images[currentIndex] }}
+                              style={styles.expandedImage}
+                              resizeMode="cover"
+                            />
+
+                            <TouchableOpacity
+                              onPress={() => {
+                                setZoomImages(item.images.map((img) => ({ url: img })));
+                                setZoomStartIndex(currentIndex);
+                                setZoomVisible(true);
+                              }}
+                              style={styles.imageTapOverlay}
+                              activeOpacity={1}
+                            >
+                              {/* Invisible overlay to capture tap */}
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+
+                        {/* Meta Information */}
+                        <View style={styles.metaRow}>
+                          <Text style={styles.metaLabel}>🏷️ Category:</Text>
+                          <Text style={styles.metaValue}>{item.productItem?.category?.categoryName}</Text>
+                        </View>
+
+                        <View style={styles.metaRow}>
+                          <Text style={styles.metaLabel}>💰 Price:</Text>
+                          <Text style={styles.metaValue}>₵{item.price}</Text>
+                        </View>
+
+                        <View style={styles.metaRow}>
+                          <Text style={styles.metaLabel}>📦 Quantity:</Text>
+                          <Text style={styles.metaValue}>{item.quantity}</Text>
+                        </View>
+
+                        <View style={styles.metaRow}>
+                          <Text style={styles.metaLabel}>📍 Active:</Text>
+                          <Text style={styles.metaValue}>{item.isActive ? 'Yes' : 'No'}</Text>
+                        </View>
+
+                        <View style={styles.metaRow}>
+                          <Text style={styles.metaLabel}>🚚 Delivery:</Text>
+                          <Text style={styles.metaValue}>
+                            {item?.deliveryOptions?.pickup ? 'Pickup' : ''}
+                            {item?.deliveryOptions?.pickup && item.deliveryOptions?.thirdParty ? ', ' : ''}
+                            {item?.deliveryOptions?.thirdParty ? 'Third-party' : ''}
+                          </Text>
+                        </View>
+
+                        <View style={[styles.metaRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                          <Text style={styles.metaLabel}>📝 Description:</Text>
+                          <Text style={[styles.metaValue, { marginTop: 4 }]}>{item.description}</Text>
+                        </View>
+
+                        {/* Edit & Delete Actions */}
+                        <View style={styles.cardActions}>
+                          <TouchableOpacity onPress={() => setEditingProductId(item._id)}>
+                            <Text style={styles.edit}>Edit</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => handleDelete(item._id)}>
+                            <Text style={styles.delete}>Delete</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+
                   </View>
+                )
+              }}
 
-                  {isExpanded && (
-                    <View style={styles.expandedContainer}>
-                      <Image
-                        source={{ uri: item.images[0] }}
-                        style={styles.expandedImage}
-                        resizeMode="cover"
-                      />
+            />
 
-                      <View style={styles.metaRow}>
-                        <Text style={styles.metaLabel}>🏷️ Category:</Text>
-                        <Text style={styles.metaValue}>{item.productItem?.category?.categoryName}</Text>
-                      </View>
+            {/**Modal for image view */}
+            <Modal
+              isVisible={zoomVisible}
+              onBackdropPress={() => setZoomVisible(false)}
+              style={{ margin: 0, backgroundColor: 'black' }}
+            >
+              <ImageViewer
+                imageUrls={zoomImages}
+                index={zoomStartIndex}
+                enableSwipeDown
+                onSwipeDown={() => setZoomVisible(false)}
+                renderHeader={() => (
+                  <TouchableOpacity
+                    onPress={() => setZoomVisible(false)}
+                    style={{
+                      position: 'absolute',
+                      top: 40,
+                      right: 20,
+                      zIndex: 10,
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      padding: 10,
+                      borderRadius: 30,
+                    }}
+                  >
+                    <Ionicons name="close" size={30} color="white" />
+                  </TouchableOpacity>
+                )}
+              />
+            </Modal>
 
-                      <View style={styles.metaRow}>
-                        <Text style={styles.metaLabel}>💰 Price:</Text>
-                        <Text style={styles.metaValue}>₵{item.price}</Text>
-                      </View>
 
-                      <View style={styles.metaRow}>
-                        <Text style={styles.metaLabel}>📦 Quantity:</Text>
-                        <Text style={styles.metaValue}>{item.quantity}</Text>
-                      </View>
 
-                      <View style={styles.metaRow}>
-                        <Text style={styles.metaLabel}>📍 Active:</Text>
-                        <Text style={styles.metaValue}>{item.isActive ? 'Yes' : 'No'}</Text>
-                      </View>
-
-                      <View style={styles.metaRow}>
-                        <Text style={styles.metaLabel}>🚚 Delivery:</Text>
-                        <Text style={styles.metaValue}>
-                          {item?.deliveryOptions?.pickup ? 'Pickup' : ''}
-                          {item?.deliveryOptions?.pickup && item.deliveryOptions?.thirdParty ? ', ' : ''}
-                          {item?.deliveryOptions?.thirdParty ? 'Third-party' : ''}
-                        </Text>
-                      </View>
-
-                      <View style={[styles.metaRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
-                        <Text style={styles.metaLabel}>📝 Description:</Text>
-                        <Text style={[styles.metaValue, { marginTop: 4 }]}>{item.description}</Text>
-                      </View>
-
-                      <View style={styles.cardActions}>
-                        <TouchableOpacity onPress={() => setEditingProductId(item._id)}>
-                          <Text style={styles.edit}>Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDelete(item._id)}>
-                          <Text style={styles.delete}>Delete</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                  )}
-                </View>
-              )
-            }}
-
-          />
+          </View>
         )}
       </View>
     )
@@ -236,6 +305,33 @@ const styles = StyleSheet.create({
   },
   cardImg: { width: 60, height: 60, borderRadius: 6 },
   imageWrapper: { alignSelf: 'flex-start' },
+
+  imageCarousel: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  imageClickable: {
+    flexDirection: 'row', justifyContent: 'space-between',
+  },
+  imageViewIcon: {
+    position: 'absolute',
+    top: '50%',
+    zIndex: 1,
+    transform: [{ translateY: -15 }], // Center vertically (since icon size is ~30)
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 10,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  imageTapOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2,
+  },
+
+
   infoWrapper: { marginTop: 8 },
   cardTitle: { fontSize: 16, fontWeight: '600' },
   cardSubtitle: { color: '#666', marginTop: 2 },

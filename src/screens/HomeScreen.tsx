@@ -83,7 +83,7 @@ export default function HomeScreen() {
   const loadMyProducts = async () => {
     setLoadingList(true)
     try {
-      const res = await api.get('/product-listings?farmer=me')
+      const res = await api.get('/product-listings')
       setProducts(res.data.data)
     } catch (e: any) {
       Alert.alert('Error', e.message)
@@ -92,31 +92,6 @@ export default function HomeScreen() {
     }
   }
 
-  const handlePrev = (item: any) => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? item.images.length - 1 : prevIndex - 1));
-  };
-
-  const handleNext = (item: any) => {
-    setCurrentIndex((prevIndex) => (prevIndex === item.images.length - 1 ? 0 : prevIndex + 1));
-  };
-
-  const handleDelete = async (id: string) => {
-    Alert.alert('Delete Product', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Yes',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await api.delete(`/product-listings/${id}`)
-            loadMyProducts()
-          } catch (e: any) {
-            Alert.alert('Error', e.message)
-          }
-        }
-      }
-    ])
-  }
 
   useEffect(() => {
     startRotation(); // Start the animation
@@ -354,7 +329,7 @@ export default function HomeScreen() {
 
             />
 
-
+              {/**Modal for image view */}
             <Modal
               isVisible={zoomVisible}
               onBackdropPress={() => setZoomVisible(false)}
@@ -439,12 +414,12 @@ const styles = StyleSheet.create({
   },
   cardImg: { width: 60, height: 60, borderRadius: 6 },
   imageWrapper: { alignSelf: 'flex-start' },
+  
   imageContainer: {
     marginTop: 10,
     flexDirection: 'row', justifyContent: 'space-between',
     paddingHorizontal: 12,
   },
-
 
   imageCarousel: {
     flexDirection: 'row',

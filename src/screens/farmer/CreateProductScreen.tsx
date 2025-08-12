@@ -36,6 +36,7 @@ export default function CreateProductScreen({ onDone }: Props) {
 
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  
   type ErrorState = {
     category?: string
     productItem?: string
