@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getToken } from '../utils/asyncStorageHelpers'
 
 const api = axios.create({
-  baseURL: 'http://10.22.105.15:5000/api',
+  baseURL: 'http://172.20.4.60:5000/api',
   headers: { 'Content-Type': 'application/json' }
 })
 
