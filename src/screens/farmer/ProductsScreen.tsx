@@ -175,7 +175,7 @@ export default function ProductsScreen() {
                         </View>
 
                         <View style={styles.metaRow}>
-                          <Text style={styles.metaLabel}>💰 Price:</Text>
+                          <Text style={styles.metaLabel}>💸 Price:</Text>
                           <Text style={styles.metaValue}>₵{item.price}</Text>
                         </View>
 
@@ -393,6 +393,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginVertical: 4,
+    borderBottomWidth: 1,
+    borderColor: COLORS.gray,
   },
 
   metaLabel: {
