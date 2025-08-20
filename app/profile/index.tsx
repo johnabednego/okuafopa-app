@@ -62,15 +62,15 @@ export default function ProfileScreen() {
   )
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>My Profile</Text>
+        <Text style={styles.title}>Profile(<Text style={{ textTransform: 'capitalize' }}>{user?.role})</Text></Text>
         {user && (
           <>
             <Text style={styles.subtitle}>
               {user.firstName} {user.lastName}
             </Text>
-            <Text style={{color:COLORS.gray}}>{user.email}</Text>
+            <Text style={{ color: COLORS.gray }}>{user.email}</Text>
           </>
         )}
       </View>
@@ -82,14 +82,14 @@ export default function ProfileScreen() {
         initialLayout={initialLayout}
         renderTabBar={props => <CustomTabBar {...props} />}
       />
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background
+    backgroundColor: COLORS.background,
   },
   header: {
     padding: 16,
@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.grayLight
   },
   title: {
-    fontSize: 22,
+    marginBottom: 10,
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.primary
   },

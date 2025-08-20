@@ -35,7 +35,7 @@ export default function FarmerTabs() {
     >
       <Tab.Screen name="Products" component={ProductsListScreen} options={{ title: 'Products', headerShown: false }} />
       <Tab.Screen name="Orders" component={OrdersScreen} options={{ title: 'Orders' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile', headerShown: false }} />
     </Tab.Navigator>
   )
 }

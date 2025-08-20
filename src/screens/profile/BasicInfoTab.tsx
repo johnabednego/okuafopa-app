@@ -163,5 +163,6 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     marginTop: 32,
+    marginBottom: 10
   },
 });
