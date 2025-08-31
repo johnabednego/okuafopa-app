@@ -158,13 +158,13 @@ export default function ProductDetailScreen({ viewProduct }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1 },
   title: { fontSize: 22, fontWeight: 'bold', color: COLORS.primary, marginTop: 12 },
   price: { fontSize: 18, marginVertical: 8 },
   desc: { fontSize: 14, color: COLORS.text, marginBottom: 12 },
   label: { fontWeight: '600', marginTop: 16 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 6,
     elevation: 2,
   },
@@ -205,17 +205,17 @@ const styles = StyleSheet.create({
 
   metaContainer: {
     width: '100%',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: COLORS.white,
     borderRadius: 10,
     padding: 12,
     marginTop: 12,
-    borderWidth: 1,
-    borderColor: COLORS.grayLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    // borderWidth: 1,
+    // borderColor: COLORS.grayLight,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
   metaRow: {
     flexDirection: 'row',
@@ -250,14 +250,14 @@ const styles = StyleSheet.create({
 
   farmerInfoContainer: {
     marginTop: 54,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: COLORS.white,
     padding: 10,
     borderRadius: 8,
   },
 
   farmerInfo: {
     flexShrink: 1,
-    maxWidth: 100, // Optional, can be tuned
+    maxWidth: 150, // Optional, can be tuned
   },
 
   farmerText: {
