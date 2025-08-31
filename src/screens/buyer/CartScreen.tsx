@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../theme/colors';
-import { useNavigation } from '@react-navigation/native';
 import { useCart, CartItem } from '../../../src/context/CartContext';
+import { router } from "expo-router";
+
 
 export default function CartScreen() {
-  const navigation = useNavigation<any>();
   const { cart, removeFromCart, updateQuantity } = useCart();
 
   const subtotal = (item: CartItem) =>
@@ -82,14 +82,18 @@ export default function CartScreen() {
             <TouchableOpacity
               style={styles.checkoutBtn}
               onPress={() =>
-                navigation.navigate('Checkout', {
-                  cartItems: cart,
-                  grandTotal,
+                router.push({
+                  pathname: "/buyer/check-out",
+                  params: {
+                    cartItems: JSON.stringify(cart),
+                    grandTotal: grandTotal.toString(),
+                  },
                 })
               }
             >
               <Text style={styles.checkoutText}>Proceed to Checkout</Text>
             </TouchableOpacity>
+
           </View>
         </>
       )}

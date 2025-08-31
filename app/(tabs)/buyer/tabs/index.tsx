@@ -1,15 +1,14 @@
-// FarmerTabs.tsx
 import React, { useRef, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Text, Animated } from 'react-native';
 
 // Screens
-import ProductsListScreen from '../../../src/screens/buyer/ProductsListScreen';
-import OrdersScreen from '../../../src/screens/buyer/OrdersScreen';
-import ProfileScreen from '../../profile';
-import CartScreen from '../../../src/screens/buyer/CartScreen';
-import { useCart } from '../../../src/context/CartContext'; 
+import ProductsListScreen from '../../../../src/screens/buyer/ProductsListScreen';
+import OrdersScreen from '../../../../src/screens/buyer/OrdersScreen';
+import ProfileScreen from '../../../profile';
+import CartScreen from '../../../../src/screens/buyer/CartScreen';
+import { useCart } from '../../../../src/context/CartContext'; 
 
 type RouteName = 'Products' | 'Orders' | 'Cart' | 'Profile';
 const Tab = createBottomTabNavigator();
