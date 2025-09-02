@@ -8,15 +8,15 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  Platform,
 } from 'react-native';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/client';
 import COLORS from '../../theme/colors';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { router } from "expo-router"
 
 export default function BasicInfoTab() {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, setUser, logout } = useContext(AuthContext);
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
@@ -55,8 +55,12 @@ export default function BasicInfoTab() {
       });
       setUser(res.data);
       Alert.alert('Success', 'Profile updated successfully');
-    } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to update profile');
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.error || e.response?.data?.message || e.message);
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoading(false);
     }

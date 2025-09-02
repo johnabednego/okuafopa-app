@@ -15,9 +15,10 @@ import { AuthContext } from '../../context/AuthContext'
 import api from '../../api/client'
 import COLORS from '../../theme/colors'
 import ChangePasswordScreen from '../../../app/profile/change-password'
+import { router } from "expo-router"
 
 export default function SettingsTab() {
-  const { user, setUser } = useContext(AuthContext)
+  const { user, setUser, logout } = useContext(AuthContext)
   const [emailNotification, setEmailNotification] = useState(user?.emailNotification || false)
   const [smsNotification, setSmsNotification] = useState(user?.smsNotification || false)
   const [loading, setLoading] = useState(false)
@@ -56,8 +57,12 @@ export default function SettingsTab() {
       })
       setUser(res.data)
       Alert.alert('Success', 'Settings updated')
-    } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to update settings')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.error || e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoading(false)
     }

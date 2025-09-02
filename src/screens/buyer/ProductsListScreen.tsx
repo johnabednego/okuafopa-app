@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import {
   View, Text, Button, ActivityIndicator,
   Alert, Animated, Image, TouchableOpacity, FlatList, StyleSheet, Easing,
@@ -10,7 +10,9 @@ import COLORS from '../../theme/colors';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Modal from 'react-native-modal';
 import ProductDetailScreen from './ProductDetailScreen';
-import { useCart } from '../../../src/context/CartContext'; 
+import { useCart } from '../../../src/context/CartContext';
+import { AuthContext } from '../../../src/context/AuthContext'
+import { router } from "expo-router"
 
 type Product = {
   productItem: any;
@@ -28,6 +30,7 @@ type Product = {
 };
 
 export default function ProductListScreen() {
+  const { logout } = useContext(AuthContext)
   const [activeCategory, setActiveCategory] = useState<string>('AllCrops');
   const [productMessage, setProductMessage] = useState<string | null>(null);
   const rotateValue = useRef(new Animated.Value(0)).current;
@@ -85,6 +88,10 @@ export default function ProductListScreen() {
       setProducts(res.data.data);
     } catch (e: any) {
       Alert.alert('Error', e.message);
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoadingList(false);
     }
@@ -112,8 +119,7 @@ export default function ProductListScreen() {
 
       if (filtered.length === 0) {
         setProductMessage(
-          `No products found${
-            category !== 'AllCrops' ? ` for ${category}` : ''
+          `No products found${category !== 'AllCrops' ? ` for ${category}` : ''
           }${searchText ? ` matching "${searchText}"` : ''}.`
         );
       }
@@ -121,6 +127,10 @@ export default function ProductListScreen() {
       setProducts(filtered);
     } catch (e: any) {
       Alert.alert('Error', e.message);
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     }
   };
 

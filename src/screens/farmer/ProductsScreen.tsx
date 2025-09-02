@@ -9,6 +9,8 @@ import { AuthContext } from '../../context/AuthContext'
 import EditProductScreen from './EditProductScreen'
 import CreateProductScreen from './CreateProductScreen'
 import { Ionicons } from '@expo/vector-icons'
+import { router } from "expo-router"
+
 
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Modal from 'react-native-modal';
@@ -32,7 +34,7 @@ type Product = {
 // }
 
 export default function ProductsScreen() {
-  const { user } = useContext(AuthContext)
+  const { logout } = useContext(AuthContext)
 
   const [tab, setTab] = useState<'list' | 'create'>('list')
   const [products, setProducts] = useState<Product[]>([])
@@ -52,6 +54,10 @@ export default function ProductsScreen() {
       setProducts(res.data.data)
     } catch (e: any) {
       Alert.alert('Error', e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoadingList(false)
     }
@@ -69,6 +75,10 @@ export default function ProductsScreen() {
             loadMyProducts()
           } catch (e: any) {
             Alert.alert('Error', e.message)
+            if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+              logout()
+              router.replace('/')  // back to public landing
+            }
           }
         }
       }

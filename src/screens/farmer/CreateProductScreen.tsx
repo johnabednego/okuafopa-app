@@ -8,6 +8,7 @@ import { uploadImageAsync } from '../../utils/cloudinary'
 import { AuthContext } from '../../context/AuthContext'
 import COLORS from '../../theme/colors'
 import api from '../../api/client'
+import { router } from "expo-router"
 
 interface Props {
   onDone: () => void
@@ -15,7 +16,7 @@ interface Props {
 
 
 export default function CreateProductScreen({ onDone }: Props) {
-  const { user } = useContext(AuthContext)
+  const { logout } = useContext(AuthContext)
 
   type Category = { _id: string; categoryName: string }
   type ProductItem = { _id: string; productName: string }
@@ -36,7 +37,7 @@ export default function CreateProductScreen({ onDone }: Props) {
 
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
-  
+
   type ErrorState = {
     category?: string
     productItem?: string
@@ -66,8 +67,15 @@ export default function CreateProductScreen({ onDone }: Props) {
     try {
       const res = await api.get('/product-categories')
       setCategories(res.data || [])
-    } catch {
-      Alert.alert('Error', 'Failed to load categories')
+    } catch (e: any) {
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        Alert.alert('Error', e.message)
+        logout()
+        router.replace('/')  // back to public landing
+      }
+      else {
+        Alert.alert('Error', 'Failed to load categories')
+      }
     } finally {
       setLoading(false)
     }
@@ -77,8 +85,15 @@ export default function CreateProductScreen({ onDone }: Props) {
     try {
       const res = await api.get(`/product-items?category=${categoryId}`)
       setProductItems(res.data || [])
-    } catch {
-      Alert.alert('Error', 'Failed to load product items')
+    } catch (e: any) {
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        Alert.alert('Error', e.message)
+        logout()
+        router.replace('/')  // back to public landing
+      }
+      else {
+        Alert.alert('Error', 'Failed to load product items')
+      }
     }
   }
 
@@ -99,6 +114,10 @@ export default function CreateProductScreen({ onDone }: Props) {
         setImages(prev => [...prev, url])
       } catch (e: any) {
         Alert.alert('Upload failed', e.message)
+        if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+          logout()
+          router.replace('/')  // back to public landing
+        }
       } finally {
         setUploading(false)
       }
@@ -147,6 +166,10 @@ export default function CreateProductScreen({ onDone }: Props) {
       onDone()
     } catch (e: any) {
       Alert.alert('Error', e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setUploading(false)
     }
@@ -155,8 +178,8 @@ export default function CreateProductScreen({ onDone }: Props) {
   if (loading) return <ActivityIndicator style={{ flex: 1 }} />
 
   return (
-    <ScrollView style={{ backgroundColor: COLORS.background }} contentContainerStyle={{ padding: 16 }}>     
-     <Text style={styles.label}>Category</Text>
+    <ScrollView style={{ backgroundColor: COLORS.background }} contentContainerStyle={{ padding: 16 }}>
+      <Text style={styles.label}>Category</Text>
       <RNPickerSelect
         onValueChange={val => setSelectedCategory(val)}
         items={categories.map(c => ({ label: c.categoryName, value: c._id }))}

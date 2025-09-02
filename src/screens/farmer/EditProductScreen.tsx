@@ -11,6 +11,8 @@ import { uploadImageAsync } from '../../utils/cloudinary'
 import { AuthContext } from '../../context/AuthContext'
 import COLORS from '../../theme/colors'
 import api from '../../api/client'
+import { router } from "expo-router"
+
 
 interface Props {
   id: string
@@ -18,7 +20,7 @@ interface Props {
 }
 
 export default function EditProductScreen({ id, onDone }: Props) {
-  const { user } = useContext(AuthContext)
+  const { logout } = useContext(AuthContext)
 
   type Category = { _id: string; categoryName: string }
   type ProductItem = { _id: string; productName: string }
@@ -70,8 +72,12 @@ export default function EditProductScreen({ id, onDone }: Props) {
     try {
       const res = await api.get('/product-categories')
       setCategories(res.data || [])
-    } catch {
-      Alert.alert('Error', 'Failed to load categories')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     }
   }
 
@@ -79,8 +85,12 @@ export default function EditProductScreen({ id, onDone }: Props) {
     try {
       const res = await api.get(`/product-items?category=${categoryId}`)
       setProductItems(res.data || [])
-    } catch {
-      Alert.alert('Error', 'Failed to load product items')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     }
   }
 
@@ -104,8 +114,12 @@ export default function EditProductScreen({ id, onDone }: Props) {
       } else {
         getLocation()
       }
-    } catch {
-      Alert.alert('Error', 'Failed to load product')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoading(false)
     }
@@ -128,6 +142,10 @@ export default function EditProductScreen({ id, onDone }: Props) {
         setImages(prev => [...prev, url])
       } catch (e: any) {
         Alert.alert('Upload failed', e.message)
+        if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+          logout()
+          router.replace('/')  // back to public landing
+        }
       } finally {
         setUploading(false)
       }
@@ -181,6 +199,10 @@ export default function EditProductScreen({ id, onDone }: Props) {
       onDone()
     } catch (e: any) {
       Alert.alert('Error', e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setUploading(false)
     }

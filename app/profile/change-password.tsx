@@ -1,6 +1,6 @@
 // app/profile/change-password.tsx
 
-import React, { useRef, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import COLORS from '../../src/theme/colors'
 import { useRouter } from 'expo-router'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Ionicons } from '@expo/vector-icons'
+import { AuthContext } from '../../src/context/AuthContext'
 
 type ChangePasswordProps = {
   /** Called when the user successfully changes password, or hits “Cancel” */
@@ -23,6 +24,7 @@ type ChangePasswordProps = {
 }
 
 export default function ChangePasswordScreen({ onClose }: ChangePasswordProps) {
+  const { logout } = useContext(AuthContext)
   const [currentPassword, setCurrentPassword] = useState('')
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
@@ -43,8 +45,12 @@ export default function ChangePasswordScreen({ onClose }: ChangePasswordProps) {
       await api.post('/users/me/change-password', { currentPassword, newPassword })
       Alert.alert('Success', 'Password changed successfully')
       close()
-    } catch (err: any) {
-      Alert.alert('Error', err.response?.data?.error || 'Failed to change password')
+    } catch (e: any) {
+      Alert.alert('Error', e.response?.data?.error || e.response?.data?.message || e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoading(false)
     }

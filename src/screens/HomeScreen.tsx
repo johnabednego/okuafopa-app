@@ -7,6 +7,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import api from '../api/client'
 import COLORS from '../theme/colors'
+import { AuthContext } from '../../src/context/AuthContext'
+import { router } from "expo-router"
 
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Modal from 'react-native-modal';
@@ -26,6 +28,8 @@ type Product = {
 }
 
 export default function HomeScreen() {
+  const { logout } = useContext(AuthContext)
+
   const [activeCategory, setActiveCategory] = useState<string>('AllCrops');
   const [productMessage, setProductMessage] = useState<string | null>(null)
 
@@ -90,6 +94,10 @@ export default function HomeScreen() {
       setProducts(res.data.data)
     } catch (e: any) {
       Alert.alert('Error', e.message)
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     } finally {
       setLoadingList(false)
     }
@@ -124,6 +132,10 @@ export default function HomeScreen() {
       setProducts(filtered);
     } catch (e: any) {
       Alert.alert('Error', e.message);
+      if (e.response?.data?.message === "Unauthorized: Invalid or expired token" || e.message === "Unauthorized: Invalid or expired token") {
+        logout()
+        router.replace('/')  // back to public landing
+      }
     }
   };
 
