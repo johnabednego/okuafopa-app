@@ -8,12 +8,13 @@ import ProductsListScreen from '../../../../src/screens/buyer/ProductsListScreen
 import OrdersScreen from '../../../../src/screens/buyer/OrdersScreen';
 import ProfileScreen from '../../../profile';
 import CartScreen from '../../../../src/screens/buyer/CartScreen';
-import { useCart } from '../../../../src/context/CartContext'; 
+import { useCart } from '../../../../src/context/CartContext';
 
 type RouteName = 'Products' | 'Orders' | 'Cart' | 'Profile';
 const Tab = createBottomTabNavigator();
 
-function BuyerTabs() {
+function BuyerTabs({ route }: any) {
+  const initialTab = route?.params?.initialTab || "Products";
   const { cartCount } = useCart();
   const bounceAnim = useRef(new Animated.Value(1)).current;
 
@@ -37,6 +38,7 @@ function BuyerTabs() {
 
   return (
     <Tab.Navigator
+      initialRouteName={initialTab}
       screenOptions={({ route }) => ({
         headerStyle: { backgroundColor: '#025F3B' },
         headerTintColor: '#fff',
