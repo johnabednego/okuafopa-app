@@ -18,6 +18,7 @@ type CartContextType = {
   removeFromCart: (id: string) => Promise<void>;
   updateQuantity: (id: string, newQty: number) => Promise<void>;
   refreshCart: () => Promise<void>;
+  setCart: (items: CartItem[]) => Promise<void>;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -41,13 +42,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     if (found) {
       //  show alert instead of incrementing
       Alert.alert(
-        "Already in Cart",
+        "❌ Already in Cart",
         `${item.productItem?.productName || "This item"} is already in your cart.`
       );
     } else {
       stored.push({ ...item, selectedQuantity: 1 });
       await AsyncStorage.setItem('cartItems', JSON.stringify(stored));
       setCart(stored);
+
+      //  show alert instead of incrementing
+      Alert.alert(
+        "✅ Added to Cart",
+        `Item added successfully.`
+      );
     }
   };
 
@@ -69,6 +76,12 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     refreshCart();
   }, []);
 
+  // Wrapper for setCart to match context type
+  const setCartAndPersist = async (items: CartItem[]) => {
+    await AsyncStorage.setItem('cartItems', JSON.stringify(items));
+    setCart(items);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -78,6 +91,7 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         removeFromCart,
         updateQuantity,
         refreshCart,
+        setCart: setCartAndPersist
       }}
     >
       {children}

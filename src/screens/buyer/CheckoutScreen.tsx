@@ -16,6 +16,8 @@ import api from "../../api/client"
 import COLORS from "../../theme/colors"
 import FormInput from "../../../src/components/FormInput"
 import { AuthContext } from '../../../src/context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCart } from '../../../src/context/CartContext';
 
 const CheckoutSchema = Yup.object().shape({
   name: Yup.string().required("Name is required"),
@@ -28,6 +30,7 @@ const CheckoutSchema = Yup.object().shape({
 
 export default function CheckoutScreen() {
   const { logout } = useContext(AuthContext)
+    const { setCart } = useCart();
 
   const scrollRef = useRef<KeyboardAwareScrollView>(null)
   const insets = useSafeAreaInsets()
@@ -64,7 +67,9 @@ export default function CheckoutScreen() {
       }
 
       await api.post("/orders", payload)
-      Alert.alert("Success", "Your order has been placed!")
+      await setCart([])
+      await AsyncStorage.removeItem('cartItems');
+      Alert.alert("✅ Success", "Your order has been placed!")
       router.replace({
         pathname: "/(tabs)/buyer/tabs",
         params: { initialTab: "Orders" },
