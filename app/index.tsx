@@ -1,4 +1,3 @@
-// app/index.tsx
 import React, { useContext, useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,5 +53,5 @@ export default function Index() {
   // Redirect to appropriate tab layout based on role
   return user.role === 'farmer'
     ? <Redirect href="/(tabs)/farmer/tabs" />
-    : <Redirect href="/(tabs)/buyer/tabs" />;
+    : <Redirect href="/(tabs)/buyer/products" />;
 }
