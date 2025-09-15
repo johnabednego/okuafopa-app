@@ -6,7 +6,10 @@ export default function BuyerLayout() {
   return (
     <CartProvider>
       <Stack>
-        <Stack.Screen name="tabs" options={{ headerShown: false }} />
+        {/* Tabs group */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        {/* Non-tab screen */}
         <Stack.Screen
           name="check-out"
           options={{

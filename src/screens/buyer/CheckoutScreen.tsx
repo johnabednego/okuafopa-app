@@ -70,10 +70,7 @@ export default function CheckoutScreen() {
       await setCart([])
       await AsyncStorage.removeItem('cartItems');
       Alert.alert("✅ Success", "Your order has been placed!")
-      router.replace({
-        pathname: "/(tabs)/buyer/tabs",
-        params: { initialTab: "Orders" },
-      });
+      router.replace("/(tabs)/buyer/orders");
 
     } catch (e: any) {
       Alert.alert("Error", e.response?.data?.message || e.message)
